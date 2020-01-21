@@ -86,6 +86,9 @@ def do_a_point(col1, col2, process, model_dir, mg5_path,
     elif model_dir == "Zprime_TFHM_UFO":
         tsb = col1
         gzp = col2
+    elif model_dir == "Zprime_TTFHM_UFO":
+        g_o_m = col1
+        gzp   = col2
     else:
         print ('model_dir=' + model_dir +
                ' not one of options in benRun.py')
