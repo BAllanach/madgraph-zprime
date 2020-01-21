@@ -1,0 +1,7 @@
+zp_out
+data
+script.stop
+py.py
+*debug
+*.pyc
+*~
