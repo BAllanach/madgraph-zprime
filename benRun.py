@@ -79,8 +79,16 @@ def do_a_point(col1, col2, process, model_dir, mg5_path,
         gmu = col1
         lg10_gtt = col2
         gtt = math.exp(math.log(10) * lg10_gtt)
+    elif model_dir == "Zprime_MUM_UFO":
+        gmu = col1
+        lg10_gsb = col2
+        gsb = math.exp(math.log(10) * lg10_gsb)
+    elif model_dir == "Zprime_TFHM_UFO":
+        tsb = col1
+        gzp = col2
     else:
-        print ('model_dir not one of options in benRun.py')
+        print ('model_dir=' + model_dir +
+               ' not one of options in benRun.py')
         quit()
     process_folder = "zp_out"
     run_card_name     = process_folder + '/Cards/run_card'
