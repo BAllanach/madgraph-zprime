@@ -168,6 +168,29 @@ def do_a_point(col1, col2, process, model_dir, mg5_path,
     crossSec = my_output(subprocess.check_output
                          (s_cmd, shell=True).rstrip())
     sbr = crossSec * 1000. # default is in pb but we want fb
+    factor = 1
+    # For non-identical final states, we multiply by 2 to taken into
+    # account the fact that the anti-quark could come from either proton
+    if process == "p p > zp > mu+ mu-":
+        factor = 1
+    elif (process == 'u u~ > zp > mu+ mu-'
+          or process == 'u c~ > zp > mu+ mu-'
+          or process == 'u~ c > zp > mu+ mu-'
+          or process == 'c c~ > zp > mu+ mu-'
+          or process == 'd d~ > zp > mu+ mu-'
+          or process == 'd s~ > zp > mu+ mu-'
+          or process == 'd~ s > zp > mu+ mu-'
+          or process == 'd b~ > zp > mu+ mu-'
+          or process == 'd~ b > zp > mu+ mu-'
+          or process == 's s~ > zp > mu+ mu-'
+          or process == 's b~ > zp > mu+ mu-'
+          or process == 's~ b > zp > mu+ mu-'
+          or process == 'b b~ > zp > mu+ mu-'):
+        factor = 2
+    else:
+        print "In benRun.py: process=" + process + " is not in list"
+        quit()
+    sbr *= factor
     # Extract additional data from parameter cards etc
     wzp_cmd = "cat " + str(par_card_filename)
     wzp_cmd += " | grep 'DECAY  32' | gawk ' { print $3 } '"
