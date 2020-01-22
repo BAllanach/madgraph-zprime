@@ -87,52 +87,11 @@ def change_run_card(process_folder, number_of_events, beam_energy):
     new_run_card_file.close()
     os.rename(new_run_card_name, run_card_filename)
 
-# col1 and col2 are the independent arguments for the scan
-# process is the madgraph process cross-section
-# model_dir is the UFO model directory name
-# mg5_path is the directory path to the executable from this dir
-# number_of_events is the number to simulate
-def do_a_point(col1, col2, process, model_dir, mg5_path,
-               number_of_events, beam_energy, mzp):
-    if (int(mzp) % 100 != 0 or mzp < 200 or mzp > 6000):
-        print (mzp + ' not appropriate for benRun.do_a_point:')
-        print ('must be divisible by 100 and 200-6000 for ATLAS')
-        quit()
-    # need to set couplings depending on model_dir
-    if model_dir == "Zprime_MDM_UFO":
-        gmu = col1
-        lg10_gtt = col2
-        gtt = math.exp(math.log(10) * lg10_gtt)
-    elif model_dir == "Zprime_MUM_UFO":
-        gmu = col1
-        lg10_gsb = col2
-        gsb = math.exp(math.log(10) * lg10_gsb)
-    elif model_dir == "Zprime_TFHM_UFO":
-        tsb = col1
-        gzp = col2
-    elif model_dir == "Zprime_TTFHM_UFO":
-        g_o_m = col1
-        gzp   = col2
-    else:
-        print ('model_dir=' + model_dir +
-               ' not one of options in benRun.py')
-        quit()
-    process_folder = "zp_out"
+def change_par_card(process_folder, mzp, gzp, tsb, gsb, gmu, gtt):
     par_card_name     = process_folder + '/Cards/param_card'
     par_card_defname  = par_card_name + '_default.dat'
     par_card_filename = par_card_name + '.dat'
     new_par_card_name = par_card_name + '_temp.dat'
-    check_stop_command()
-    # This sets up the process in the directory 
-    cmds_y3 = "echo 'import model " + model_dir + "\n"
-    cmds_y3 += "define p = u c d s b u~ c~ d~ s~ b~\n"
-    cmds_y3 += "define maxjetflavor=5\n" 
-    cmds_y3 += "define aswgtflavor=5\ngenerate " + process + "\n"
-    cmds_y3 += "output " + process_folder + "\n"
-    cmds_y3 += "y\n"
-    cmds_y3 += "quit()' | " + mg5_path + "/mg5_aMC"
-    output = subprocess.check_output(cmds_y3, shell=True)
-    change_run_card(process_folder, number_of_events, beam_energy)
     # Modify par_card
     copyfile(par_card_defname, par_card_filename)        
     par_card_file = open(par_card_filename,'r')
@@ -165,6 +124,76 @@ def do_a_point(col1, col2, process, model_dir, mg5_path,
     par_card_file.close()
     new_par_card_file.close()
     os.rename(new_par_card_name, par_card_filename)
+    
+# INPUTS: process_folder
+# OUTPUT: wzp - width of Z'
+#     br_mumu - BR(Z' -> mu+ mu-)
+#     br_tt   - BR(Z' -> t tbar )
+#     br_bb   - BR(Z' -> b bbar )
+def get_decays(process_folder, wzp, br_mumu, br_tt, br_bb):
+    par_card_filename = process_folder + '/Cards/param_card.dat'
+    wzp_cmd = "cat " + str(par_card_filename)
+    wzp_cmd += " | grep 'DECAY  32' | gawk ' { print $3 } '"
+    wzp = my_output(subprocess.check_output
+                    (wzp_cmd, shell=True).rstrip())
+    br_mumu_cmd = "cat " + str(par_card_filename) + " | grep "
+    br_mumu_cmd += "'   2    13  -13' | gawk ' { print $1 } '"
+    br_mumu = my_output(subprocess.check_output
+                        (br_mumu_cmd, shell=True).rstrip())
+    br_tt_cmd = "cat " + str(par_card_filename) + " | grep "
+    br_tt_cmd += "'   2    6  -6 #' | gawk ' { print $1 } '"
+    br_tt = my_output(subprocess.check_output
+                      (br_tt_cmd, shell=True).rstrip())
+    br_bb_cmd = "cat " + str(par_card_filename) + " | grep "
+    br_bb_cmd += "'   2    5  -5 #' | gawk ' { print $1 } '"
+    br_bb = my_output(subprocess.check_output
+                      (br_bb_cmd, shell=True).rstrip())
+    
+# col1 and col2 are the independent arguments for the scan
+# process is the madgraph process cross-section
+# model_dir is the UFO model directory name
+# mg5_path is the directory path to the executable from this dir
+# number_of_events is the number to simulate
+def do_a_point(col1, col2, process, model_dir, mg5_path,
+               number_of_events, beam_energy, mzp):
+    if (int(mzp) % 100 != 0 or mzp < 200 or mzp > 6000):
+        print (mzp + ' not appropriate for benRun.do_a_point:')
+        print ('must be divisible by 100 and 200-6000 for ATLAS')
+        quit()
+    # set initial variables to zero
+    gzp = 0; tsb = 0; gsb = 0; gmu = 0; gtt = 0
+    # need to set couplings depending on model_dir
+    if model_dir == "Zprime_MDM_UFO":
+        gmu = col1
+        lg10_gtt = col2
+        gtt = math.exp(math.log(10) * lg10_gtt)
+    elif model_dir == "Zprime_MUM_UFO":
+        gmu = col1
+        lg10_gsb = col2
+        gsb = math.exp(math.log(10) * lg10_gsb)
+    elif model_dir == "Zprime_TFHM_UFO":
+        tsb = col1
+        gzp = col2
+    elif model_dir == "Zprime_TTFHM_UFO":
+        g_o_m = col1
+        gzp   = col2
+    else:
+        print ('model_dir=' + model_dir +
+               ' not one of options in benRun.py')
+        quit()
+    process_folder = "zp_out"
+    check_stop_command()
+    # This sets up the process in the directory 
+    cmds_y3 = "echo 'import model " + model_dir + "\n"
+    cmds_y3 += "define p = u c d s b u~ c~ d~ s~ b~\n"
+    cmds_y3 += "define maxjetflavor=5\n" 
+    cmds_y3 += "define aswgtflavor=5\ngenerate " + process + "\n"
+    cmds_y3 += "output " + process_folder + "\n"
+    cmds_y3 += "y\n"
+    cmds_y3 += "quit()' | " + mg5_path + "/mg5_aMC"
+    output = subprocess.check_output(cmds_y3, shell=True)
+    change_run_card(process_folder, number_of_events, beam_energy)
+    change_par_card(process_folder, mzp, gzp, tsb, gsb, gmu, gtt);
     # Run madgraph
     s_cmd = "echo 'launch " + process_folder + "\n\n\n"
     s_cmd += "quit()' | " + mg5_path + "/mg5_aMC"
@@ -195,23 +224,8 @@ def do_a_point(col1, col2, process, model_dir, mg5_path,
         print "In benRun.py: process=" + process + " is not in list"
         quit()
     sbr *= factor
-    # Extract additional data from parameter cards etc
-    wzp_cmd = "cat " + str(par_card_filename)
-    wzp_cmd += " | grep 'DECAY  32' | gawk ' { print $3 } '"
-    wzp = my_output(subprocess.check_output
-                    (wzp_cmd, shell=True).rstrip())
-    br_mumu_cmd = "cat " + str(par_card_filename) + " | grep "
-    br_mumu_cmd += "'   2    13  -13' | gawk ' { print $1 } '"
-    br_mumu = my_output(subprocess.check_output
-                        (br_mumu_cmd, shell=True).rstrip())
-    br_tt_cmd = "cat " + str(par_card_filename) + " | grep "
-    br_tt_cmd += "'   2    6  -6 #' | gawk ' { print $1 } '"
-    br_tt = my_output(subprocess.check_output
-                      (br_tt_cmd, shell=True).rstrip())
-    br_bb_cmd = "cat " + str(par_card_filename) + " | grep "
-    br_bb_cmd += "'   2    5  -5 #' | gawk ' { print $1 } '"
-    br_bb = my_output(subprocess.check_output
-                      (br_bb_cmd, shell=True).rstrip())
+    wzp = 0.; br_mumu = 0.; br_tt = 0.; br_bb = 0.
+    get_decays(process_folder, wzp, br_mumu, br_tt, br_bb)
     output_line(col1, col2, mzp, wzp, sbr, br_mumu, br_tt,
                 br_bb, process)
 
