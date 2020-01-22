@@ -63,6 +63,30 @@ def my_output(a_string):
         answer = float(a_string)
     return answer;
 
+# Change run card with the options that you want
+def change_run_card(process_folder, number_of_events, beam_energy):
+    run_card_name     = process_folder + '/Cards/run_card'
+    run_card_defname  = run_card_name + '_default.dat'
+    run_card_filename = run_card_name + '.dat'
+    new_run_card_name = run_card_name + '_temp.dat'
+    # Modify run card first
+    copyfile(run_card_defname, run_card_filename)
+    run_card_file = open(run_card_filename,'r')
+    new_run_card_file = file(new_run_card_name,'w')
+    # Modify the run card to generate number_of_events events
+    for line in run_card_file.readlines():
+        if str.find(line, "= nevents ! Number of unweighted events requested") >= 0:
+	    new_run_card_file.write("  " + str(number_of_events) + ' = nevents ! Number of unweighted events requested\n')
+        elif str.find(line, "= ebeam1  ! beam 1 total energy in GeV") >= 0:
+	    new_run_card_file.write("  " + str(beam_energy) + '= ebeam1  ! beam 1 total energy in GeV\n')
+        elif str.find(line, "= ebeam2  ! beam 2 total energy in GeV") >= 0:
+	    new_run_card_file.write("  " + str(beam_energy) + '= ebeam2  ! beam 2 total energy in GeV\n')
+        else:
+            new_run_card_file.write(line)
+    run_card_file.close()
+    new_run_card_file.close()
+    os.rename(new_run_card_name, run_card_filename)
+
 # col1 and col2 are the independent arguments for the scan
 # process is the madgraph process cross-section
 # model_dir is the UFO model directory name
@@ -94,10 +118,6 @@ def do_a_point(col1, col2, process, model_dir, mg5_path,
                ' not one of options in benRun.py')
         quit()
     process_folder = "zp_out"
-    run_card_name     = process_folder + '/Cards/run_card'
-    run_card_defname  = run_card_name + '_default.dat'
-    run_card_filename = run_card_name + '.dat'
-    new_run_card_name = run_card_name + '_temp.dat'
     par_card_name     = process_folder + '/Cards/param_card'
     par_card_defname  = par_card_name + '_default.dat'
     par_card_filename = par_card_name + '.dat'
@@ -112,23 +132,7 @@ def do_a_point(col1, col2, process, model_dir, mg5_path,
     cmds_y3 += "y\n"
     cmds_y3 += "quit()' | " + mg5_path + "/mg5_aMC"
     output = subprocess.check_output(cmds_y3, shell=True)
-    # Modify run card first
-    copyfile(run_card_defname, run_card_filename)
-    run_card_file = open(run_card_filename,'r')
-    new_run_card_file = file(new_run_card_name,'w')
-    # Modify the run card to generate number_of_events events
-    for line in run_card_file.readlines():
-        if str.find(line, "= nevents ! Number of unweighted events requested") >= 0:
-	    new_run_card_file.write("  " + str(number_of_events) + ' = nevents ! Number of unweighted events requested\n')
-        elif str.find(line, "= ebeam1  ! beam 1 total energy in GeV") >= 0:
-	    new_run_card_file.write("  " + str(beam_energy) + '= ebeam1  ! beam 1 total energy in GeV\n')
-        elif str.find(line, "= ebeam2  ! beam 2 total energy in GeV") >= 0:
-	    new_run_card_file.write("  " + str(beam_energy) + '= ebeam2  ! beam 2 total energy in GeV\n')
-        else:
-            new_run_card_file.write(line)
-    run_card_file.close()
-    new_run_card_file.close()
-    os.rename(new_run_card_name, run_card_filename)
+    change_run_card(process_folder, number_of_events, beam_energy)
     # Modify par_card
     copyfile(par_card_defname, par_card_filename)        
     par_card_file = open(par_card_filename,'r')
