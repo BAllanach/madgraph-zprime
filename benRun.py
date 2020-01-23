@@ -22,7 +22,7 @@ def my_range(start, end, step):
         yield start
         start += step
 
-def output_line(col1, col2, mzp, wzp, sbr, br_mumu, br_tt, br_bb, process):
+def output_line(col1, col2, mzp, wzp, sbr, br_mumu, br_tt, br_bb, br_tautau, process):
     i = int((mzp - 200) / 100)
     # ATLAS 139 fb^{-1} Run II 95% CLs upper limits on sigma x BR for a narrow resonance from 200 - 6000 in 100 GeV steps in MZ'
     # Narrow width limit
@@ -54,8 +54,14 @@ def output_line(col1, col2, mzp, wzp, sbr, br_mumu, br_tt, br_bb, process):
                  0.0541818, 0.0570729, 0.0567344, 0.0583914,
                  0.0584915, 0.0590304, 0.06, 0.0612396,
                  0.0619071, 0.0634932]
-    print ('%4.3e ' % col1 + ' %4.3e' % col2 + ' %4.3e' % mzp + ' %4.3e' % wzp + ' %4.3e' % sbr + ' %4.3e' % SIG_LIM[i] + ' %4.3e' % br_mumu + ' %4.3e' % br_tt + ' %4.3e' % br_bb + ' %4.3e' % SIG_LIM_0_1[i] + ' # ' + process)
+    print ('%4.3e ' % col1 + ' %4.3e' % col2 + ' %4.3e' % mzp + ' %4.3e' % wzp + ' %4.3e' % sbr + ' %4.3e' % SIG_LIM[i] + ' %4.3e' % br_mumu + ' %4.3e' % br_tt + ' %4.3e' % br_bb + ' %4.3e' % SIG_LIM_0_1[i] + ' %4.3e' % br_tautau + ' # ' + process)
 
+# Header for output    
+def print_header(x, beam_energy, model_dir, number_of_events,
+                 header_col12):
+    print ('# x=%5.3e' % x + ' beam_energy=%5.3e' % beam_energy + ' model=' + model_dir + ' number_of_events=%d' % number_of_events)
+    print ("# " + header_col12 + "MZ'/GeV   wzp/GeV   sig/fb    siglim0/fb br_mumu   br_tt     br_bb    siglim0.1/fb  br_tautau  process")
+    
 def my_output(a_string):
     if a_string == "":
         answer = 0.
@@ -135,7 +141,7 @@ def change_par_card(process_folder, mzp, gzp, tsb, gsb, gmu, gtt):
 #     br_mumu - BR(Z' -> mu+ mu-)
 #     br_tt   - BR(Z' -> t tbar )
 #     br_bb   - BR(Z' -> b bbar )
-def get_decays(process_folder, wzp, br_mumu, br_tt, br_bb):
+def get_decays(process_folder, wzp, br_mumu, br_tt, br_bb, br_tautau):
     par_card_filename = process_folder + '/Cards/param_card.dat'
     wzp_cmd = "cat " + str(par_card_filename)
     wzp_cmd += " | grep 'DECAY  32' | gawk ' { print $3 } '"
@@ -153,6 +159,10 @@ def get_decays(process_folder, wzp, br_mumu, br_tt, br_bb):
     br_bb_cmd += "'   2    5  -5 #' | gawk ' { print $1 } '"
     br_bb = my_output(subprocess.check_output
                       (br_bb_cmd, shell=True).rstrip())
+    br_tautau_cmd = "cat " + str(par_card_filename) + " | grep "
+    br_tautau_cmd += "'   2    15  -15' | gawk ' { print $1 } '"
+    br_tautau = my_output(subprocess.check_output
+                        (br_tautau_cmd, shell=True).rstrip())
     
 # col1 and col2 are the independent arguments for the scan
 # process is the madgraph process cross-section
@@ -229,10 +239,10 @@ def do_a_point(col1, col2, process, model_dir, mg5_path,
     sbr = crossSec * 1000. # default is in pb but we want fb
     factor = 1
     sbr *= factor
-    wzp = 0.; br_mumu = 0.; br_tt = 0.; br_bb = 0.
-    get_decays(process_folder, wzp, br_mumu, br_tt, br_bb)
+    wzp = 0.; br_mumu = 0.; br_tt = 0.; br_bb = 0.; br_tautau = 0.
+    get_decays(process_folder, wzp, br_mumu, br_tt, br_bb, br_tautau)
     output_line(col1, col2, mzp, wzp, sbr, br_mumu, br_tt,
-                br_bb, process)
+                br_bb, br_tautau, process)
 
 
 

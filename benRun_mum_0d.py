@@ -32,9 +32,8 @@ number_of_events = 1000
 # mod of value of Wilson coefficient cbar_LL: default
 x   = 1.06
 
-# Header for output
-print ('# x=%5.3e' % x + ' beam_energy=%5.3e' % beam_energy + ' model=' + model_dir + ' number_of_events=%d' % number_of_events + ' gsb=%5.3e' % gsb)
-print "# gmu       lg10(gtt)  MZ'/GeV   wzp/GeV   sig/fb    siglim0/fb br_mumu   br_tt     br_bb    siglim0.1/fb  process"
+benRun.print_header(x, beam_energy, model_dir, number_of_events,
+                    ' gmu       lg10(gsb)  ')
 
 process_list = ['p p > zp > mu+ mu-',
                 'u u~ > zp > mu+ mu-',

@@ -26,9 +26,8 @@ number_of_events = 1
 # mod of value of Wilson coefficient cbar_LL
 x   = float(sys.argv[1])  
 
-# Header for output
-print ('# x=%5.3e' % x + ' beam_energy=%5.3e' % beam_energy + ' model=' + model_dir + ' number_of_events=%d' % number_of_events)
-print "# g/M            gzp   MZ'/GeV   wzp/GeV   sig/fb    siglim0/fb br_mumu   br_tt     br_bb    siglim0.1/fb  process"
+benRun.print_header(x, beam_energy, model_dir, number_of_events,
+                    ' g/M            gzp   ')
 
 process = 'p p > zp > mu+ mu-'
 for mzp in range(200, 6100, 100):
