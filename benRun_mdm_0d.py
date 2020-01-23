@@ -36,7 +36,20 @@ x   = 1.06
 print ('# x=%5.3e' % x + ' beam_energy=%5.3e' % beam_energy + ' model=' + model_dir + ' number_of_events=%d' % number_of_events + ' gsb=%5.3e' % gsb)
 print "# gmu       lg10(gtt)  MZ'/GeV   wzp/GeV   sig/fb    siglim0/fb br_mumu   br_tt     br_bb    siglim0.1/fb  process"
 
-process_list = ['p p > zp > mu+ mu-', 'u u~ > zp > mu+ mu-', 'u c~ > zp > mu+ mu-', 'u~ c > zp > mu+ mu-','c c~ > zp > mu+ mu-', 'd d~ > zp > mu+ mu-', 'd s~ > zp > mu+ mu-', 'd~ s > zp > mu+ mu-', 'd b~ > zp > mu+ mu-', 'd~ b > zp > mu+ mu-', 's s~ > zp > mu+ mu-', 's b~ > zp > mu+ mu-', 's~ b > zp > mu+ mu-', 'b b~ > zp > mu+ mu-']
+process_list = ['p p > zp > mu+ mu-',
+                'u u~ > zp > mu+ mu-',
+                'u c~ > zp > mu+ mu-',
+                'u~ c > zp > mu+ mu-',
+                'c c~ > zp > mu+ mu-',
+                'd d~ > zp > mu+ mu-',
+                'd s~ > zp > mu+ mu-',
+                'd~ s > zp > mu+ mu-',
+                'd b~ > zp > mu+ mu-',
+                'd~ b > zp > mu+ mu-',
+                's s~ > zp > mu+ mu-',
+                's b~ > zp > mu+ mu-',
+                's~ b > zp > mu+ mu-',
+                'b b~ > zp > mu+ mu-']
 for process in process_list:
     gmu = -(mzp / 3.6e4)**2 * x / gsb
     gtt = -gsb * 25.0

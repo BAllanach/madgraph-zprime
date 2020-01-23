@@ -81,6 +81,11 @@ def change_run_card(process_folder, number_of_events, beam_energy):
 	    new_run_card_file.write("  " + str(beam_energy) + '= ebeam1  ! beam 1 total energy in GeV\n')
         elif str.find(line, "= ebeam2  ! beam 2 total energy in GeV") >= 0:
 	    new_run_card_file.write("  " + str(beam_energy) + '= ebeam2  ! beam 2 total energy in GeV\n')
+        elif str.find(line, "False  = cut_decays") >= 0:
+            new_run_card_file.write("    True  = cut_decays    ! Cut decay products\n")
+# following tests if we are applying cuts in practice            
+#        elif str.find(line, " = ptl ") >=0:
+#            new_run_card_file.write(" 1000.0  = ptl       ! minimum pt for the charged leptons\n")
         else:
             new_run_card_file.write(line)
     run_card_file.close()
@@ -160,6 +165,27 @@ def do_a_point(col1, col2, process, model_dir, mg5_path,
         print (mzp + ' not appropriate for benRun.do_a_point:')
         print ('must be divisible by 100 and 200-6000 for ATLAS')
         quit()
+    # For non-identical final states, we multiply by 2 to taken into
+    # account the fact that the anti-quark could come from either proton
+    if (process == "p p > zp > mu+ mu-" or process == "p p > zp, zp > mu+ mu-"):
+        factor = 1
+    elif (process == 'u u~ > zp > mu+ mu-'
+          or process == 'u c~ > zp > mu+ mu-'
+          or process == 'u~ c > zp > mu+ mu-'
+          or process == 'c c~ > zp > mu+ mu-'
+          or process == 'd d~ > zp > mu+ mu-'
+          or process == 'd s~ > zp > mu+ mu-'
+          or process == 'd~ s > zp > mu+ mu-'
+          or process == 'd b~ > zp > mu+ mu-'
+          or process == 'd~ b > zp > mu+ mu-'
+          or process == 's s~ > zp > mu+ mu-'
+          or process == 's b~ > zp > mu+ mu-'
+          or process == 's~ b > zp > mu+ mu-'
+          or process == 'b b~ > zp > mu+ mu-'):
+        factor = 2
+    else:
+        print "In benRun.py: process=" + process + " is not in list"
+        quit()
     # set initial variables to zero
     gzp = 0; tsb = 0; gsb = 0; gmu = 0; gtt = 0
     # need to set couplings depending on model_dir
@@ -197,32 +223,11 @@ def do_a_point(col1, col2, process, model_dir, mg5_path,
     # Run madgraph
     s_cmd = "echo 'launch " + process_folder + "\n\n\n"
     s_cmd += "quit()' | " + mg5_path + "/mg5_aMC"
-    s_cmd += " | grep 'Cross-section' | gawk ' { print $3 }'"
+    s_cmd += " | gawk '/Cross-section/{ print $3 }'"
     crossSec = my_output(subprocess.check_output
                          (s_cmd, shell=True).rstrip())
     sbr = crossSec * 1000. # default is in pb but we want fb
     factor = 1
-    # For non-identical final states, we multiply by 2 to taken into
-    # account the fact that the anti-quark could come from either proton
-    if process == "p p > zp > mu+ mu-":
-        factor = 1
-    elif (process == 'u u~ > zp > mu+ mu-'
-          or process == 'u c~ > zp > mu+ mu-'
-          or process == 'u~ c > zp > mu+ mu-'
-          or process == 'c c~ > zp > mu+ mu-'
-          or process == 'd d~ > zp > mu+ mu-'
-          or process == 'd s~ > zp > mu+ mu-'
-          or process == 'd~ s > zp > mu+ mu-'
-          or process == 'd b~ > zp > mu+ mu-'
-          or process == 'd~ b > zp > mu+ mu-'
-          or process == 's s~ > zp > mu+ mu-'
-          or process == 's b~ > zp > mu+ mu-'
-          or process == 's~ b > zp > mu+ mu-'
-          or process == 'b b~ > zp > mu+ mu-'):
-        factor = 2
-    else:
-        print "In benRun.py: process=" + process + " is not in list"
-        quit()
     sbr *= factor
     wzp = 0.; br_mumu = 0.; br_tt = 0.; br_bb = 0.
     get_decays(process_folder, wzp, br_mumu, br_tt, br_bb)
