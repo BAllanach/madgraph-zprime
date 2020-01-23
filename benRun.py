@@ -90,8 +90,8 @@ def change_run_card(process_folder, number_of_events, beam_energy):
         elif str.find(line, "False  = cut_decays") >= 0:
             new_run_card_file.write("    True  = cut_decays    ! Cut decay products\n")
 # following tests if we are applying cuts in practice            
-#        elif str.find(line, " = ptl ") >=0:
-#            new_run_card_file.write(" 1000.0  = ptl       ! minimum pt for the charged leptons\n")
+        elif str.find(line, " = ptl ") >=0:
+            new_run_card_file.write("   30.0  = ptl       ! minimum pt for the charged leptons\n")
         else:
             new_run_card_file.write(line)
     run_card_file.close()
@@ -175,6 +175,7 @@ def do_a_point(col1, col2, process, model_dir, mg5_path,
         print (mzp + ' not appropriate for benRun.do_a_point:')
         print ('must be divisible by 100 and 200-6000 for ATLAS')
         quit()
+    factor = 1
     # For non-identical final states, we multiply by 2 to taken into
     # account the fact that the anti-quark could come from either proton
     if (process == "p p > zp > mu+ mu-" or process == "p p > zp, zp > mu+ mu-"):
@@ -237,7 +238,6 @@ def do_a_point(col1, col2, process, model_dir, mg5_path,
     crossSec = my_output(subprocess.check_output
                          (s_cmd, shell=True).rstrip())
     sbr = crossSec * 1000. # default is in pb but we want fb
-    factor = 1
     sbr *= factor
     wzp = 0.; br_mumu = 0.; br_tt = 0.; br_bb = 0.; br_tautau = 0.
     get_decays(process_folder, wzp, br_mumu, br_tt, br_bb, br_tautau)
