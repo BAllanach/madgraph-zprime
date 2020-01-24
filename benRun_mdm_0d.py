@@ -28,7 +28,7 @@ mg5_path = "../"
 # Initial parameters
 beam_energy = 6500.0 # LHC Run II
 # 0d scan usually requires decent precision
-number_of_events = 1000    
+number_of_events = 1    
 # mod of value of Wilson coefficient cbar_LL: default
 x   = 1.06
 

@@ -21,6 +21,7 @@ def my_range(start, end, step):
     while start <= end:
         yield start
         start += step
+    return
 
 def output_line(col1, col2, mzp, wzp, sbr, br_mumu, br_tt, br_bb, br_tautau, process):
     i = int((mzp - 200) / 100)
@@ -55,12 +56,14 @@ def output_line(col1, col2, mzp, wzp, sbr, br_mumu, br_tt, br_bb, br_tautau, pro
                  0.0584915, 0.0590304, 0.06, 0.0612396,
                  0.0619071, 0.0634932]
     print ('%4.3e ' % col1 + ' %4.3e' % col2 + ' %4.3e' % mzp + ' %4.3e' % wzp + ' %4.3e' % sbr + ' %4.3e' % SIG_LIM[i] + ' %4.3e' % br_mumu + ' %4.3e' % br_tt + ' %4.3e' % br_bb + ' %4.3e' % SIG_LIM_0_1[i] + ' %4.3e' % br_tautau + ' # ' + process)
-
+    return
+    
 # Header for output    
 def print_header(x, beam_energy, model_dir, number_of_events,
                  header_col12):
     print ('# x=%5.3e' % x + ' beam_energy=%5.3e' % beam_energy + ' model=' + model_dir + ' number_of_events=%d' % number_of_events)
     print ("# " + header_col12 + "MZ'/GeV   wzp/GeV   sig/fb    siglim0/fb br_mumu   br_tt     br_bb    siglim0.1/fb  br_tautau  process")
+    return
     
 def my_output(a_string):
     if a_string == "":
@@ -97,7 +100,8 @@ def change_run_card(process_folder, number_of_events, beam_energy):
     run_card_file.close()
     new_run_card_file.close()
     os.rename(new_run_card_name, run_card_filename)
-
+    return
+    
 def change_par_card(process_folder, mzp, gzp, tsb, gsb, gmu, gtt):
     par_card_name     = process_folder + '/Cards/param_card'
     par_card_defname  = par_card_name + '_default.dat'
@@ -135,14 +139,15 @@ def change_par_card(process_folder, mzp, gzp, tsb, gsb, gmu, gtt):
     par_card_file.close()
     new_par_card_file.close()
     os.rename(new_par_card_name, par_card_filename)
+    return
     
 # INPUTS: process_folder
 # OUTPUT: wzp - width of Z'
 #     br_mumu - BR(Z' -> mu+ mu-)
 #     br_tt   - BR(Z' -> t tbar )
 #     br_bb   - BR(Z' -> b bbar )
-def get_decays(process_folder, wzp, br_mumu, br_tt, br_bb, br_tautau):
-    par_card_filename = process_folder + '/Cards/param_card.dat'
+def get_decays(process_folder):
+    par_card_filename = process_folder + "/Cards/param_card.dat"
     wzp_cmd = "cat " + str(par_card_filename)
     wzp_cmd += " | grep 'DECAY  32' | gawk ' { print $3 } '"
     wzp = my_output(subprocess.check_output
@@ -163,6 +168,7 @@ def get_decays(process_folder, wzp, br_mumu, br_tt, br_bb, br_tautau):
     br_tautau_cmd += "'   2    15  -15' | gawk ' { print $1 } '"
     br_tautau = my_output(subprocess.check_output
                         (br_tautau_cmd, shell=True).rstrip())
+    return (wzp, br_mumu, br_tt, br_bb, br_tautau)
     
 # col1 and col2 are the independent arguments for the scan
 # process is the madgraph process cross-section
@@ -221,28 +227,19 @@ def do_a_point(col1, col2, process, model_dir, mg5_path,
     process_folder = "zp_out"
     check_stop_command()
     # This sets up the process in the directory 
-    cmds_y3 = "echo 'import model " + model_dir + "\n"
-    cmds_y3 += "define p = u c d s b u~ c~ d~ s~ b~\n"
-    cmds_y3 += "define maxjetflavor=5\n" 
-    cmds_y3 += "define aswgtflavor=5\ngenerate " + process + "\n"
-    cmds_y3 += "output " + process_folder + "\n"
-    cmds_y3 += "y\n"
-    cmds_y3 += "quit()' | " + mg5_path + "/mg5_aMC"
+    cmds_y3 = "echo 'import model " + model_dir + "\n" + "define p = u c d s b u~ c~ d~ s~ b~\n" + "define maxjetflavor=5\n" + "define aswgtflavor=5\ngenerate " + process + "\n" + "output " + process_folder + "\n" + "y\n" + "quit()' | " + mg5_path + "/mg5_aMC"
     output = subprocess.check_output(cmds_y3, shell=True)
     change_run_card(process_folder, number_of_events, beam_energy)
     change_par_card(process_folder, mzp, gzp, tsb, gsb, gmu, gtt);
     # Run madgraph
-    s_cmd = "echo 'launch " + process_folder + "\n\n\n"
-    s_cmd += "quit()' | " + mg5_path + "/mg5_aMC"
-    s_cmd += " | gawk '/Cross-section/{ print $3 }'"
+    s_cmd = "echo 'launch " + process_folder + "\n\n\n" + "quit()' | " + mg5_path + "/mg5_aMC" + " | gawk '/Cross-section/{ print $3 }'"
     crossSec = my_output(subprocess.check_output
                          (s_cmd, shell=True).rstrip())
     sbr = crossSec * 1000. # default is in pb but we want fb
     sbr *= factor
-    wzp = 0.; br_mumu = 0.; br_tt = 0.; br_bb = 0.; br_tautau = 0.
-    get_decays(process_folder, wzp, br_mumu, br_tt, br_bb, br_tautau)
+    (wzp, br_mumu, br_tt, br_bb, br_tautau) = get_decays(process_folder)
     output_line(col1, col2, mzp, wzp, sbr, br_mumu, br_tt,
                 br_bb, br_tautau, process)
-
+    return
 
 
