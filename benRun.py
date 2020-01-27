@@ -184,7 +184,11 @@ def do_a_point(col1, col2, process, model_dir, mg5_path,
     factor = 1
     # For non-identical final states, we multiply by 2 to taken into
     # account the fact that the anti-quark could come from either proton
-    if (process == "p p > zp > mu+ mu-" or process == "p p > zp, zp > mu+ mu-"):
+    if (process == "p p > zp > mu+ mu-" or
+        process == "p p > zp, zp > mu+ mu-" or
+        process == "p p > zp > t t~" or
+        process == "p p > zp > tau+ tau-" or
+        process == "p p > zp > b b~"):
         factor = 1
     elif (process == 'u u~ > zp > mu+ mu-'
           or process == 'u c~ > zp > mu+ mu-'
