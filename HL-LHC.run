@@ -1,0 +1,5 @@
+./benRun_y3_0d.py 3000 0.1 7000 0.74 'p p > zp > mu+ mu-' > ~/benRun_y3_0d.out 2> ~/benRun_y3_0d.err < /dev/null
+./benRun_y3_0d.py 3000 0.1 7000 0.74 'p p > zp > t t~' >> ~/benRun_y3_0d.out 2> ~/benRun_y3_0d.err < /dev/null
+./benRun_y3_0d.py 3000 0.1 7000 0.74 'p p > zp > tau+ tau-' >> ~/benRun_y3_0d.out 2> ~/benRun_y3_0d.err < /dev/null
+./benRun_y3_0d.py 3000 0.1 7000 0.74 'p p > zp > b b~' >> ~/benRun_y3_0d.out 2> ~/benRun_y3_0d.err < /dev/null
+

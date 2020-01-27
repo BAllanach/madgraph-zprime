@@ -1,0 +1,6 @@
+./benRun_mdm_0d.py 1000 -0.001 > ~/benRun_mdm_0d.out 2> ~/benRun_mdm_0d.err < /dev/null
+./benRun_mum_0d.py 800 0.01 > ~/benRun_mum_0d.out 2> ~/benRun_mum_0d.err < /dev/null
+./benRun_mdm_2d.py 0.74 > ~/benRun_mdm_2d.0.74.out 2> ~/benRun_mdm_2d.0.74.err < /dev/null
+./benRun_mum_2d.py 0.74 > ~/benRun_mum_2d.0.74.out 2> ~/benRun_mum_2d.0.74.err </dev/null
+./benRun_y3_2d.py 0.74 > ~/benRun_y3_2d.0.74.out 2> ~/benRun_y3_2d.0.74.err </dev/null
+./benRun_ty3_2d.py 0.74 > ~/benRun_ty3_2d.0.74.out 2> ~/benRun_ty3_2d.0.74.err </dev/null
